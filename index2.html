@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUST GULNAZ | Премиум Клубника в Шоколаде | Астана</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --chocolate: #1a0f0a;
+            --chocolate-light: #2E1A14;
+            --strawberry: #C62828;
+            --strawberry-glow: #ff1f1f;
+            --cream: #F7F3EF;
+            --gold: #D4AF37;
+            --gold-bright: #FFD700;
+            --dark: #0a0503;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        html {
+            scroll-behavior: auto;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--dark);
+            color: var(--cream);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-follower {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.3;
+            transition: transform 0.3s ease-out;
+        }
+
+        .cursor.hover {
+            transform: scale(2);
+            background: var(--gold);
+            border-color: transparent;
+        }
+
+        /* Loading Screen */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s, visibility 0.8s;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            color: var(--gold);
+            letter-spacing: 0.5em;
+            animation: pulse 2s infinite;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(212, 175, 55, 0.2);
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            animation: load 3s ease-out forwards;
+        }
+
+        @keyframes load {
+            to { width: 100%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            mix-blend-mode: difference;
+        }
+
+        .nav-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            color: var(--cream);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-link {
+            color: var(--cream);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            position: relative;
+            padding: 10px 0;
+            transition: color 0.3s;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section with WebGL */
+        .hero {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .hero-subtitle {
+            font-size: 0.9rem;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: 300;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+
+        .hero-title .line {
+            display: block;
+            overflow: hidden;
+        }
+
+        .hero-title .line span {
+            display: block;
+            transform: translateY(100%);
+        }
+
+        .hero-title .accent {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            max-width: 600px;
+            margin: 0 auto 50px;
+            opacity: 0;
+            line-height: 1.8;
+        }
+
+        .hero-cta {
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 50px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: color 0.4s;
+            opacity: 0;
+        }
+
+        .hero-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gold);
+            transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+        }
+
+        .hero-cta:hover {
+            color: var(--dark);
+        }
+
+        .hero-cta:hover::before {
+            left: 0;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+        }
+
+        .scroll-text {
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--gold), transparent);
+            animation: scrollLine 2s infinite;
+        }
+
+        @keyframes scrollLine {
+            0% { transform: scaleY(0); transform-origin: top; }
+            50% { transform: scaleY(1); transform-origin: top; }
+            50.1% { transform-origin: bottom; }
+            100% { transform: scaleY(0); transform-origin: bottom; }
+        }
+
+        /* 3D Product Showcase */
+        .showcase {
+            min-height: 100vh;
+            position: relative;
+            padding: 150px 5%;
+            display: flex;
+            align-items: center;
+        }
+
+        .showcase-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: center;
+        }
+
+        .showcase-3d {
+            position: relative;
+            height: 600px;
+            perspective: 1000px;
+        }
+
+        .product-3d-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+
+        .product-3d-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        .product-image-3d {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+            transform: translateZ(50px);
+        }
+
+        .product-image-3d img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-reflection {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleY(-1);
+            opacity: 0.3;
+            filter: blur(2px);
+            mask-image: linear-gradient(to bottom, transparent, black);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black);
+        }
+
+        .showcase-content h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        .showcase-content h2 span {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .showcase-text {
+            font-size: 1rem;
+            line-height: 2;
+            color: rgba(247, 243, 239, 0.7);
+            margin-bottom: 40px;
+        }
+
+        .showcase-features {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: var(--glass);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s;
+            cursor: pointer;
+        }
+
+        .feature-item:hover {
+            border-color: var(--gold);
+            transform: translateX(10px);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+        }
+
+        .feature-text h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--gold);
+        }
+
+        .feature-text p {
+            font-size: 0.85rem;
+            color: rgba(247, 243, 239, 0.6);
+        }
+
+        /* Video Section */
+        .video-section {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, var(--dark) 100%);
+        }
+
+        .video-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .play-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 50px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.4s;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulseRing 2s infinite;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+
+        .play-button:hover {
+            background: var(--gold);
+            transform: scale(1.1);
+        }
+
+        .play-button:hover svg {
+            color: var(--dark);
+        }
+
+        .video-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .video-subtitle {
+            font-size: 1rem;
+            color: rgba(247, 243, 239, 0.6);
+            letter-spacing: 0.2em;
+        }
+
+        /* 3D Product Gallery */
+        .gallery-3d {
+            padding: 150px 5%;
+            position: relative;
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 100px;
+        }
+
+        .gallery-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .gallery-header p {
+            font-size: 1rem;
+            color: rgba(247, 243, 239, 0.6);
+            letter-spacing: 0.2em;
+        }
+
+        .carousel-3d {
+            position: relative;
+            height: 500px;
+            perspective: 2000px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .carousel-card {
+            position: absolute;
+            width: 350px;
+            height: 450px;
+            left: 50%;
+            top: 50%;
+            margin-left: -175px;
+            margin-top: -225px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .carousel-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-card-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            transform: translateY(100%);
+            transition: transform 0.4s;
+        }
+
+        .carousel-card:hover .carousel-card-info {
+            transform: translateY(0);
+        }
+
+        .carousel-card-info h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .carousel-card-info p {
+            font-size: 0.9rem;
+            color: rgba(247, 243, 239, 0.8);
+        }
+
+        .carousel-nav {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .carousel-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .carousel-btn:hover {
+            background: var(--gold);
+            color: var(--dark);
+        }
+
+        /* Parallax Sections */
+        .parallax-section {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .parallax-bg {
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 120%;
+            height: 140%;
+            background-size: cover;
+            background-position: center;
+            will-change: transform;
+        }
+
+        .parallax-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 50px;
+            background: rgba(10, 5, 3, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            max-width: 700px;
+        }
+
+        .parallax-content h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        .parallax-content p {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: rgba(247, 243, 239, 0.8);
+        }
+
+        /* Order Section with 3D Form */
+        .order-section {
+            min-height: 100vh;
+            padding: 150px 5%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .order-container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: center;
+        }
+
+        .order-visual {
+            position: relative;
+            height: 600px;
+        }
+
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .floating-item {
+            position: absolute;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-item:nth-child(1) {
+            width: 300px;
+            height: 400px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            z-index: 3;
+        }
+
+        .floating-item:nth-child(2) {
+            width: 250px;
+            height: 350px;
+            top: 30%;
+            right: 10%;
+            animation-delay: -2s;
+            z-index: 2;
+        }
+
+        .floating-item:nth-child(3) {
+            width: 200px;
+            height: 280px;
+            bottom: 10%;
+            left: 30%;
+            animation-delay: -4s;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(2deg); }
+        }
+
+        .floating-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .order-form-container {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 30px;
+            padding: 60px;
+        }
+
+        .order-form-container h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+
+        .order-form-container > p {
+            color: rgba(247, 243, 239, 0.6);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+            color: var(--cream);
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+
+        .form-group label {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(247, 243, 239, 0.5);
+            pointer-events: none;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label,
+        .form-group textarea:focus + label,
+        .form-group textarea:not(:placeholder-shown) + label {
+            top: 0;
+            font-size: 0.75rem;
+            color: var(--gold);
+            background: var(--dark);
+            padding: 0 10px;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group textarea + label {
+            top: 30px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--gold), #B8941F);
+            border: none;
+            border-radius: 10px;
+            color: var(--dark);
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Location Section */
+        .location-section {
+            padding: 150px 5%;
+            position: relative;
+        }
+
+        .location-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .location-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .location-header p {
+            font-size: 1.2rem;
+            color: var(--gold);
+            letter-spacing: 0.2em;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .location-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .location-card:hover::before {
+            opacity: 1;
+        }
+
+        .location-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--gold);
+        }
+
+        .location-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            color: var(--dark);
+        }
+
+        .location-card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--gold);
+        }
+
+        .location-card p {
+            color: rgba(247, 243, 239, 0.7);
+            line-height: 1.8;
+        }
+
+        /* Footer */
+        footer {
+            padding: 100px 5% 50px;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 80px;
+        }
+
+        .footer-brand h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .footer-brand p {
+            color: rgba(247, 243, 239, 0.6);
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: var(--gold);
+            color: var(--dark);
+            transform: translateY(-5px);
+        }
+
+        .footer-section h4 {
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 30px;
+        }
+
+        .footer-section a {
+            display: block;
+            color: rgba(247, 243, 239, 0.6);
+            text-decoration: none;
+            margin-bottom: 15px;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--cream);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 50px;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            color: rgba(247, 243, 239, 0.4);
+            font-size: 0.85rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .showcase-container,
+            .order-container,
+            .location-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .carousel-container {
+                width: 300px;
+                height: 400px;
+            }
+
+            .carousel-card {
+                width: 280px;
+                height: 360px;
+                margin-left: -140px;
+                margin-top: -180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-social {
+                justify-content: center;
+            }
+
+            body {
+                cursor: auto;
+            }
+
+            .cursor, .cursor-follower {
+                display: none;
+            }
+        }
+
+        /* Particle System */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFloat 10s infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Golden Dust Effect */
+        .golden-dust {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--gold);
+            animation: dustFloat 8s infinite ease-in-out;
+        }
+
+        @keyframes dustFloat {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <!-- Loading Screen -->
+    <div class="loader">
+        <div class="loader-text">JUST GULNAZ</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-logo">JUST GULNAZ</div>
+        <div class="nav-links">
+            <a href="#showcase" class="nav-link">Коллекция</a>
+            <a href="#gallery" class="nav-link">Галерея</a>
+            <a href="#process" class="nav-link">Процесс</a>
+            <a href="#order" class="nav-link">Заказать</a>
+            <a href="#contacts" class="nav-link">Контакты</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section with WebGL -->
+    <section class="hero">
+        <canvas id="webgl-canvas"></canvas>
+        
+        <div class="hero-content">
+            <p class="hero-subtitle">Премиум Десерты Астана</p>
+            <h1 class="hero-title">
+                <span class="line"><span>Клубника</span></span>
+                <span class="line"><span>в <span class="accent">шоколаде</span></span></span>
+            </h1>
+            <p class="hero-description">
+                Искусство вкуса в каждой ягоде. Ручная работа, бельгийский шоколад, безупречный стиль. Доставка по Астане за 2 часа.
+            </p>
+            <a href="#order" class="hero-cta">
+                <span>Создать заказ</span>
+                <i data-lucide="arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="scroll-indicator">
+            <span class="scroll-text">Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- 3D Product Showcase -->
+    <section class="showcase" id="showcase">
+        <div class="showcase-container">
+            <div class="showcase-3d" id="tilt-card">
+                <div class="product-3d-card">
+                    <div class="product-3d-card-inner">
+                        <div class="product-image-3d">
+                            <img src="https://images.unsplash.com/photo-1548907040-4baa42d10919?w=800&q=80" alt="Premium Box">
+                            <div class="product-reflection">
+                                <img src="https://images.unsplash.com/photo-1548907040-4baa42d10919?w=800&q=80" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="showcase-content">
+                <h2>Премиум <span>Коллекция</span></h2>
+                <p class="showcase-text">
+                    Каждая ягода проходит строгий отбор. Мы используем только свежайшую клубнику местных фермеров и покрываем её 72% бельгийским тёмным шоколадом Callebaut. Золотой декор наносится вручную с помощью съедобного золота 24 карата.
+                </p>
+                
+                <div class="showcase-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i data-lucide="gem"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>Бельгийский шоколад</h4>
+                            <p>Callebaut 72% какао</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i data-lucide="leaf"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>Свежие ягоды</h4>
+                            <p>Ежедневный отбор с ферм</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>Съедобное золото</h4>
+                            <p>24 карата ручная работа</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <section class="video-section" id="process">
+        <video class="video-bg" autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-pouring-chocolate-syrup-on-strawberries-4286-large.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+        
+        <div class="video-content">
+            <div class="play-button" onclick="playVideo()">
+                <i data-lucide="play" style="width: 40px; height: 40px; color: var(--gold); margin-left: 5px;"></i>
+            </div>
+            <h2 class="video-title">Искусство Создания</h2>
+            <p class="video-subtitle">Смотрите, как рождается совершенство</p>
+        </div>
+    </section>
+
+    <!-- 3D Carousel Gallery -->
+    <section class="gallery-3d" id="gallery">
+        <div class="gallery-header">
+            <h2>Галерея</h2>
+            <p>Выберите свой идеальный набор</p>
+        </div>
+
+        <div class="carousel-3d">
+            <div class="carousel-container" id="carousel">
+                <div class="carousel-card" data-index="0">
+                    <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&q=80" alt="Premium">
+                    <div class="carousel-card-info">
+                        <h3>Premium Box</h3>
+                        <p>20 штук — 12 000 ₸</p>
+                    </div>
+                </div>
+                <div class="carousel-card" data-index="1">
+                    <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80" alt="Romantic">
+                    <div class="carousel-card-info">
+                        <h3>Romantic Box</h3>
+                        <p>12 штук — 8 500 ₸</p>
+                    </div>
+                </div>
+                <div class="carousel-card" data-index="2">
+                    <img src="https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=600&q=80" alt="Mini">
+                    <div class="carousel-card-info">
+                        <h3>Mini Box</h3>
+                        <p>6 штук — 4 500 ₸</p>
+                    </div>
+                </div>
+                <div class="carousel-card" data-index="3">
+                    <img src="https://images.unsplash.com/photo-1548907040-4baa42d10919?w=600&q=80" alt="Luxury">
+                    <div class="carousel-card-info">
+                        <h3>Luxury Tower</h3>
+                        <p>30 штук — 18 000 ₸</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="carousel-nav">
+                <button class="carousel-btn" onclick="rotateCarousel(-1)">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <button class="carousel-btn" onclick="rotateCarousel(1)">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Parallax Section -->
+    <section class="parallax-section">
+        <div class="parallax-bg" style="background-image: url('https://images.unsplash.com/photo-1548907040-4baa42d10919?w=1920&q=80');" id="parallax-bg"></div>
+        <div class="parallax-content">
+            <h2>Доставка по Астане</h2>
+            <p>Доставляем свежесть в течение 2 часов в специальных термобоксах. Каждый набор сопровождается открыткой ручной работы с вашим посланием.</p>
+        </div>
+    </section>
+
+    <!-- Order Section -->
+    <section class="order-section" id="order">
+        <div class="order-container">
+            <div class="order-visual">
+                <div class="floating-elements">
+                    <div class="floating-item">
+                        <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&q=80" alt="Box 1">
+                    </div>
+                    <div class="floating-item">
+                        <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&q=80" alt="Box 2">
+                    </div>
+                    <div class="floating-item">
+                        <img src="https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=400&q=80" alt="Box 3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-form-container">
+                <h2>Создать Заказ</h2>
+                <p>Заполните форму и мы свяжемся с вами</p>
+                
+                <form onsubmit="handleOrder(event)">
+                    <div class="form-group">
+                        <input type="text" id="name" placeholder=" " required>
+                        <label for="name">Ваше имя</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="tel" id="phone" placeholder=" " required>
+                        <label for="phone">Телефон</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <select id="product" required style="color: rgba(247, 243, 239, 0.5);">
+                            <option value="" disabled selected>Выберите набор</option>
+                            <option value="premium">Premium Box — 12 000 ₸</option>
+                            <option value="romantic">Romantic Box — 8 500 ₸</option>
+                            <option value="mini">Mini Box — 4 500 ₸</option>
+                            <option value="luxury">Luxury Tower — 18 000 ₸</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="text" id="address" placeholder=" " required>
+                        <label for="address">Адрес доставки (Астана)</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <textarea id="comment" placeholder=" "></textarea>
+                        <label for="comment">Комментарий</label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        Отправить в WhatsApp
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section -->
+    <section class="location-section" id="contacts">
+        <div class="location-header">
+            <h2>Контакты</h2>
+            <p>АСТАНА • САРАЙШЫҚ 5/1</p>
+        </div>
+
+        <div class="location-grid">
+            <div class="location-card">
+                <div class="location-icon">
+                    <i data-lucide="map-pin"></i>
+                </div>
+                <h3>Адрес</h3>
+                <p>Сарайшық 5/1<br>Астана, Казахстан<br>Работаем с 9:00 до 21:00</p>
+            </div>
+            
+            <div class="location-card">
+                <div class="location-icon">
+                    <i data-lucide="phone"></i>
+                </div>
+                <h3>WhatsApp</h3>
+                <p>+7 705 556 3506<br>Быстрый ответ<br>Заказ 24/7</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>JUST GULNAZ</h3>
+                <p>Премиум клубника в бельгийском шоколаде. Создаём эмоции и делаем ваши моменты особенными в Астане.</p>
+                <div class="footer-social">
+                    <a href="https://instagram.com/just_gulnaz__" class="social-link" target="_blank">
+                        <i data-lucide="instagram"></i>
+                    </a>
+                    <a href="https://wa.me/77055563506" class="social-link" target="_blank">
+                        <i data-lucide="message-circle"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Навигация</h4>
+                <a href="#showcase">Коллекция</a>
+                <a href="#gallery">Галерея</a>
+                <a href="#process">Процесс</a>
+                <a href="#order">Заказать</a>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Контакты</h4>
+                <a href="tel:+77055563506">+7 705 556 3506</a>
+                <a href="#">Сарайшық 5/1</a>
+                <a href="#">Астана</a>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Социальные сети</h4>
+                <a href="https://instagram.com/just_gulnaz__" target="_blank">Instagram</a>
+                <a href="https://wa.me/77055563506" target="_blank">WhatsApp</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>© 2026 Just Gulnaz. Премиум десерты Астана. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Lenis Smooth Scroll
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.loader').classList.add('hidden');
+                initAnimations();
+            }, 3000);
+        });
+
+        // Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        const follower = document.querySelector('.cursor-follower');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            cursor.style.left = mouseX - 10 + 'px';
+            cursor.style.top = mouseY - 10 + 'px';
+        });
+
+        function animateFollower() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            
+            follower.style.left = cursorX - 20 + 'px';
+            follower.style.top = cursorY - 20 + 'px';
+            
+            requestAnimationFrame(animateFollower);
+        }
+        animateFollower();
+
+        // Cursor hover effect
+        document.querySelectorAll('a, button, .feature-item, .carousel-card').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // WebGL Hero Animation
+        function initWebGL() {
+            const canvas = document.getElementById('webgl-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Create floating chocolate particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 200;
+            const posArray = new Float32Array(particlesCount * 3);
+            const scaleArray = new Float32Array(particlesCount);
+
+            for(let i = 0; i < particlesCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 10;
+                posArray[i+1] = (Math.random() - 0.5) * 10;
+                posArray[i+2] = (Math.random() - 0.5) * 10;
+                scaleArray[i/3] = Math.random();
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scaleArray, 1));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                color: 0xD4AF37,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+
+            // Create strawberry geometry (simplified as icosahedron)
+            const strawberryGeometry = new THREE.IcosahedronGeometry(1, 0);
+            const strawberryMaterial = new THREE.MeshPhongMaterial({
+                color: 0xC62828,
+                shininess: 100,
+                specular: 0x444444
+            });
+            const strawberry = new THREE.Mesh(strawberryGeometry, strawberryMaterial);
+            strawberry.position.set(0, 0, -5);
+            scene.add(strawberry);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xD4AF37, 1, 100);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            camera.position.z = 5;
+
+            // Mouse interaction
+            let mouseXGL = 0;
+            let mouseYGL = 0;
+
+            document.addEventListener('mousemove', (event) => {
+                mouseXGL = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseYGL = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            // Animation loop
+            let time = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                time += 0.01;
+
+                // Rotate strawberry
+                strawberry.rotation.x += 0.005;
+                strawberry.rotation.y += 0.01;
+                strawberry.position.y = Math.sin(time) * 0.5;
+
+                // Animate particles
+                particlesMesh.rotation.y = time * 0.1;
+                particlesMesh.rotation.x = mouseYGL * 0.5;
+                particlesMesh.rotation.y += mouseXGL * 0.5;
+
+                // Pulse effect
+                const positions = particlesGeometry.attributes.position.array;
+                for(let i = 0; i < particlesCount; i++) {
+                    const i3 = i * 3;
+                    positions[i3 + 1] += Math.sin(time + positions[i3]) * 0.01;
+                }
+                particlesGeometry.attributes.position.needsUpdate = true;
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize animations
+        function initAnimations() {
+            initWebGL();
+
+            // Hero animations
+            gsap.to('.hero-subtitle', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 0.5
+            });
+
+            gsap.to('.hero-title .line span', {
+                y: 0,
+                duration: 1.2,
+                stagger: 0.2,
+                ease: "power4.out",
+                delay: 0.8
+            });
+
+            gsap.to('.hero-description', {
+                opacity: 1,
+                duration: 1,
+                delay: 1.5
+            });
+
+            gsap.to('.hero-cta', {
+                opacity: 1,
+                duration: 1,
+                delay: 1.8
+            });
+
+            gsap.to('.scroll-indicator', {
+                opacity: 1,
+                duration: 1,
+                delay: 2.2
+            });
+
+            // Scroll animations
+            gsap.utils.toArray('.showcase-content').forEach(content => {
+                gsap.from(content, {
+                    scrollTrigger: {
+                        trigger: content,
+                        start: "top 80%",
+                        end: "top 50%",
+                        scrub: 1
+                    },
+                    y: 100,
+                    opacity: 0
+                });
+            });
+
+            // 3D Tilt effect for product card
+            const tiltCard = document.getElementById('tilt-card');
+            tiltCard.addEventListener('mousemove', (e) => {
+                const rect = tiltCard.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+                
+                gsap.to('.product-3d-card', {
+                    rotateX: rotateX,
+                    rotateY: rotateY,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            });
+
+            tiltCard.addEventListener('mouseleave', () => {
+                gsap.to('.product-3d-card', {
+                    rotateX: 0,
+                    rotateY: 0,
+                    duration: 0.5
+                });
+            });
+
+            // Parallax effect
+            gsap.to('#parallax-bg', {
+                scrollTrigger: {
+                    trigger: '.parallax-section',
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: true
+                },
+                y: 200
+            });
+
+            // Feature items animation
+            gsap.from('.feature-item', {
+                scrollTrigger: {
+                    trigger: '.showcase-features',
+                    start: "top 80%"
+                },
+                x: -50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.2
+            });
+
+            // Floating elements animation
+            gsap.to('.floating-item', {
+                scrollTrigger: {
+                    trigger: '.order-visual',
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: 1
+                },
+                y: -100,
+                rotation: 10,
+                stagger: 0.1
+            });
+        }
+
+        // 3D Carousel
+        let currentRotation = 0;
+        const carousel = document.getElementById('carousel');
+        const cards = document.querySelectorAll('.carousel-card');
+        const totalCards = cards.length;
+        const angleStep = 360 / totalCards;
+        const radius = 400;
+
+        function updateCarousel() {
+            cards.forEach((card, index) => {
+                const angle = (angleStep * index + currentRotation) * (Math.PI / 180);
+                const x = Math.sin(angle) * radius;
+                const z = Math.cos(angle) * radius - radius;
+                const rotateY = angleStep * index + currentRotation;
+                
+                const scale = (z + radius * 2) / (radius * 2) * 0.5 + 0.5;
+                const opacity = (z + radius) / (radius * 2) * 0.6 + 0.4;
+                
+                card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-rotateY}deg) scale(${scale})`;
+                card.style.opacity = opacity;
+                card.style.zIndex = Math.round(scale * 10);
+            });
+        }
+
+        function rotateCarousel(direction) {
+            currentRotation += direction * angleStep;
+            updateCarousel();
+        }
+
+        // Initialize carousel
+        updateCarousel();
+
+        // Auto rotate carousel
+        let autoRotate = setInterval(() => rotateCarousel(1), 5000);
+
+        // Pause on hover
+        document.querySelector('.carousel-3d').addEventListener('mouseenter', () => {
+            clearInterval(autoRotate);
+        });
+
+        document.querySelector('.carousel-3d').addEventListener('mouseleave', () => {
+            autoRotate = setInterval(() => rotateCarousel(1), 5000);
+        });
+
+        // Form handling
+        function handleOrder(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const product = document.getElementById('product').value;
+            const address = document.getElementById('address').value;
+            const comment = document.getElementById('comment').value;
+
+            const products = {
+                'premium': 'Premium Box (20 шт) — 12 000 ₸',
+                'romantic': 'Romantic Box (12 шт) — 8 500 ₸',
+                'mini': 'Mini Box (6 шт) — 4 500 ₸',
+                'luxury': 'Luxury Tower (30 шт) — 18 000 ₸'
+            };
+
+            const message = `🍓 Новый заказ Just Gulnaz\n\n👤 Имя: ${name}\n📱 Телефон: ${phone}\n🎁 Набор: ${products[product]}\n📍 Адрес: ${address}\n💬 Комментарий: ${comment}\n\n📍 Астана, Сарайшық 5/1`;
+            
+            window.open(`https://wa.me/77055563506?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // Video play function
+        function playVideo() {
+            const video = document.querySelector('.video-bg');
+            if (video.paused) {
+                video.play();
+                video.muted = false;
+                video.style.opacity = '1';
+            } else {
+                video.pause();
+            }
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    lenis.scrollTo(target);
+                }
+            });
+        });
+
+        // Create golden dust particles
+        function createGoldenDust() {
+            const container = document.querySelector('.hero');
+            for (let i = 0; i < 50; i++) {
+                const dust = document.createElement('div');
+                dust.className = 'golden-dust';
+                dust.style.left = Math.random() * 100 + '%';
+                dust.style.top = Math.random() * 100 + '%';
+                dust.style.animationDelay = Math.random() * 8 + 's';
+                dust.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(dust);
+            }
+        }
+        createGoldenDust();
+
+        // Navigation show/hide on scroll
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            const nav = document.querySelector('.nav');
+            
+            if (currentScroll > 100) {
+                nav.style.background = 'rgba(10, 5, 3, 0.9)';
+                nav.style.backdropFilter = 'blur(20px)';
+            } else {
+                nav.style.background = 'transparent';
+                nav.style.backdropFilter = 'none';
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Magnetic effect for buttons
+        document.querySelectorAll('.hero-cta, .carousel-btn, .submit-btn').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0, 0)';
+            });
+        });
+    </script>
+</body>
+</html>
